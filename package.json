@@ -1,0 +1,11 @@
+{
+  "name": "sistema-cotizaciones",
+  "private": true,
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "setup": "npm run install:all && cd backend && npm run db:migrate && npm run db:generate && npm run db:seed",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "npm run dev:backend & npm run dev:frontend"
+  }
+}
