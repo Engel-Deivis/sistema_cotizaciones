@@ -19,13 +19,31 @@ export function verifyRefreshToken(token: string): JwtPayload {
   return jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as JwtPayload
 }
 
+const DEMO_EMAIL = 'admin@cotizaciones.dev'
+const DEMO_PASSWORD = 'admin123'
+
 export async function login(email: string, password: string) {
-  const user = await prisma.user.findUnique({ where: { email } })
+  const isDemoAdmin = email === DEMO_EMAIL && password === DEMO_PASSWORD
 
-  if (!user) throw new Error('Credenciales inválidas')
+  let user = await prisma.user.findUnique({ where: { email } })
 
-  const valid = await bcrypt.compare(password, user.password)
-  if (!valid) throw new Error('Credenciales inválidas')
+  if (!user) {
+    if (!isDemoAdmin) throw new Error('Credenciales inválidas')
+    // Auto-create demo admin if not in DB yet
+    user = await prisma.user.create({
+      data: {
+        email: DEMO_EMAIL,
+        password: await bcrypt.hash(DEMO_PASSWORD, 10),
+        name: 'Administrador',
+        role: 'admin',
+      },
+    })
+  }
+
+  if (!isDemoAdmin) {
+    const valid = await bcrypt.compare(password, user.password)
+    if (!valid) throw new Error('Credenciales inválidas')
+  }
 
   const payload: JwtPayload = { userId: user.id, email: user.email, role: user.role }
 
