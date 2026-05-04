@@ -7,16 +7,17 @@ Portfolio project — Full-stack quotes management system with CRM features.
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 18 + TypeScript + Vite + Zustand + Shadcn/ui + Tailwind CSS |
-| Backend | Node.js + Express + TypeScript |
-| Database | SQLite + Prisma ORM |
+| Backend | Node.js + Express + TypeScript (Vercel Serverless) |
+| Database | PostgreSQL + Prisma ORM (Neon — free tier) |
 | Auth | JWT + Refresh Tokens (auto-rotation) |
-| Email | Nodemailer (auto Ethereal account in dev) |
+| Email | Nodemailer (Ethereal en dev, SMTP en prod) |
+| Deploy | Vercel (frontend + backend serverless) |
 
 ## Features
 
 - **Formulario público** — Clientes solicitan cotizaciones sin registrarse
 - **Panel admin** — Gestión de cotizaciones y clientes con filtros
-- **Historial por cliente** — Todas las cotizaciones y estadísticas de cada cliente
+- **Historial por cliente** — Todas las cotizaciones y estadísticas por cliente
 - **Envío de emails** — Cotizaciones por email con preview en desarrollo
 - **Auth segura** — Access token (15min) + Refresh token (7d) con rotación automática
 - **Cambio de estado** — pending → sent → approved / rejected / expired
@@ -31,47 +32,59 @@ cd sistema_cotizaciones
 cd backend && npm install
 cd ../frontend && npm install
 
-# 2. Configurar base de datos
-cd backend
-npm run db:migrate    # Crea SQLite y aplica migraciones
-npm run db:generate   # Genera Prisma client
-npm run db:seed       # Inserta datos de ejemplo
+# 2. Configurar .env en backend/
+cp backend/.env.example backend/.env
+# Editar DATABASE_URL con tu conexión PostgreSQL local o Neon
 
-# 3. Arrancar servidores (2 terminales)
-cd backend && npm run dev      # → http://localhost:3001
-cd frontend && npm run dev     # → http://localhost:5173
+# 3. Base de datos
+cd backend
+npm run db:migrate
+npm run db:generate
+npm run db:seed       # admin@cotizaciones.dev / admin123
+
+# 4. Arrancar (2 terminales)
+cd backend && npm run dev      # http://localhost:3001
+cd frontend && npm run dev     # http://localhost:5173
 ```
 
-**Credenciales demo:** `admin@cotizaciones.dev` / `admin123`
+## Deploy en Vercel (todo en uno)
 
-## Production Deployment
+### 1. Base de datos — Neon (gratis)
 
-### Frontend → Vercel
+1. Crear cuenta en [neon.tech](https://neon.tech)
+2. New Project → copiar el **Connection String**
 
-1. Importar repo en [vercel.com](https://vercel.com)
+### 2. Deploy en Vercel
+
+1. Importar este repo en [vercel.com](https://vercel.com)
 2. Vercel detecta `vercel.json` automáticamente
-3. Agregar variable de entorno:
-   ```
-   VITE_API_URL=https://tu-backend.onrender.com
-   ```
-4. Deploy
+3. Agregar estas variables de entorno en Vercel:
 
-### Backend → Render
+```
+DATABASE_URL=postgresql://...  ← Connection string de Neon
+JWT_SECRET=<string aleatorio largo>
+JWT_REFRESH_SECRET=<string aleatorio largo>
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+NODE_ENV=production
+FRONTEND_URL=https://tu-proyecto.vercel.app
+```
 
-1. Crear cuenta en [render.com](https://render.com)
-2. New Web Service → conectar este repo
-3. Root Directory: `backend`
-4. Build Command: `npm install && npx prisma generate && npx prisma migrate deploy && npm run build`
-5. Start Command: `node dist/app.js`
-6. Agregar variables de entorno:
-   ```
-   NODE_ENV=production
-   DATABASE_URL=file:./prisma/prod.db
-   JWT_SECRET=<genera uno seguro>
-   JWT_REFRESH_SECRET=<genera uno seguro>
-   FRONTEND_URL=https://tu-app.vercel.app
-   ```
-7. Deploy y copiar la URL para el paso de Vercel
+4. En **Build & Development Settings**:
+   - Build Command: `cd frontend && npm install && npm run build`
+   - Output Directory: `frontend/dist`
+
+5. Deploy ✓
+
+### 3. Correr migraciones y seed en producción
+
+En Vercel → Settings → Environment Variables, luego desde terminal local:
+
+```bash
+cd backend
+DATABASE_URL="tu-neon-url" npx prisma migrate deploy
+DATABASE_URL="tu-neon-url" npx tsx prisma/seed.ts
+```
 
 ## Routes
 
