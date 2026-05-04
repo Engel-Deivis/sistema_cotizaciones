@@ -1,17 +1,17 @@
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api'
+// En desarrollo: Vite proxy /api → localhost:3001
+// En producción: /_/backend/api (Vercel experimentalServices)
+const BASE_URL = import.meta.env.DEV ? '/api' : '/_/backend/api'
 
 const api = axios.create({ baseURL: BASE_URL })
 
-// Adjuntar access token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken')
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
-// Renovar token automáticamente al expirar
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -28,7 +28,7 @@ api.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post('/api/auth/refresh', { refreshToken })
+        const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken })
         localStorage.setItem('accessToken', data.accessToken)
         localStorage.setItem('refreshToken', data.refreshToken)
         original.headers.Authorization = `Bearer ${data.accessToken}`
