@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import * as authService from '../services/auth.service'
 import { AuthRequest } from '../types'
 import { prisma } from '../lib/prisma'
+import { JWT_SECRET, JWT_REFRESH_SECRET } from '../lib/secrets'
 
 const DEMO_EMAIL = 'admin@cotizaciones.dev'
 const DEMO_PASSWORD = 'admin123'
@@ -25,8 +26,8 @@ export async function loginHandler(req: Request, res: Response) {
 
   if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
     const payload = { userId: DEMO_USER.id, email: DEMO_USER.email, role: DEMO_USER.role }
-    const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '7d' } as jwt.SignOptions)
-    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, { expiresIn: '30d' } as jwt.SignOptions)
+    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' } as jwt.SignOptions)
+    const refreshToken = jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: '30d' } as jwt.SignOptions)
     res.json({ accessToken, refreshToken, user: DEMO_USER })
     return
   }

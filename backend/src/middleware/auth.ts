@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 import { AuthRequest, JwtPayload } from '../types'
+import { JWT_SECRET } from '../lib/secrets'
 
 export function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization
@@ -13,7 +14,7 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
   const token = authHeader.slice(7)
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload
+    const payload = jwt.verify(token, JWT_SECRET) as JwtPayload
     req.userId = payload.userId
     req.userEmail = payload.email
     req.userRole = payload.role

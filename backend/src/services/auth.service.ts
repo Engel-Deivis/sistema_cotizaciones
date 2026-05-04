@@ -2,21 +2,22 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { prisma } from '../lib/prisma'
 import { JwtPayload } from '../types'
+import { JWT_SECRET, JWT_REFRESH_SECRET } from '../lib/secrets'
 
 export function signAccessToken(payload: JwtPayload): string {
-  return jwt.sign(payload, process.env.JWT_SECRET!, {
+  return jwt.sign(payload, JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
   } as jwt.SignOptions)
 }
 
 export function signRefreshToken(payload: JwtPayload): string {
-  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, {
+  return jwt.sign(payload, JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   } as jwt.SignOptions)
 }
 
 export function verifyRefreshToken(token: string): JwtPayload {
-  return jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as JwtPayload
+  return jwt.verify(token, JWT_REFRESH_SECRET) as JwtPayload
 }
 
 const DEMO_EMAIL = 'admin@cotizaciones.dev'
