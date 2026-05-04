@@ -49,9 +49,10 @@ export function PublicQuotePage() {
       setSubmitted(true)
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.error || 'Error al enviar la solicitud')
+        const msg = err.response?.data?.error
+        setError(typeof msg === 'string' ? msg : 'Error al enviar la solicitud. Intenta de nuevo.')
       } else {
-        setError('Error al enviar la solicitud')
+        setError('Error al enviar la solicitud. Intenta de nuevo.')
       }
     }
   }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Receipt } from 'lucide-react'
+import axios from 'axios'
 import { useAuthStore } from '@/store/auth.store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,8 +27,19 @@ export function LoginPage() {
     try {
       await login(email, password)
       navigate('/admin')
-    } catch {
-      setError('Email o contraseña incorrectos')
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status
+        if (status === 401) {
+          setError('Email o contraseña incorrectos')
+        } else if (status === 503) {
+          setError('Error de conexión a la base de datos. Verifica la configuración.')
+        } else {
+          setError('Error del servidor. Intenta de nuevo.')
+        }
+      } else {
+        setError('Error de conexión. Verifica tu internet.')
+      }
     }
   }
 
