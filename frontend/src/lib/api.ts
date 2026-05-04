@@ -4,7 +4,7 @@ import axios from 'axios'
 // En producción: /_/backend/api (Vercel experimentalServices)
 const BASE_URL = import.meta.env.DEV ? '/api' : '/_/backend/api'
 
-const api = axios.create({ baseURL: BASE_URL })
+const api = axios.create({ baseURL: BASE_URL, timeout: 15000 })
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken')

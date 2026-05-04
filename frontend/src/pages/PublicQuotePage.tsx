@@ -49,10 +49,14 @@ export function PublicQuotePage() {
       setSubmitted(true)
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        const msg = err.response?.data?.error
-        setError(typeof msg === 'string' ? msg : 'Error al enviar la solicitud. Intenta de nuevo.')
+        if (err.code === 'ECONNABORTED') {
+          setError('El servidor tardó demasiado. Intenta de nuevo.')
+        } else {
+          const msg = err.response?.data?.error
+          setError(typeof msg === 'string' ? msg : 'Error al enviar la solicitud. Intenta de nuevo.')
+        }
       } else {
-        setError('Error al enviar la solicitud. Intenta de nuevo.')
+        setError('Error de conexión. Intenta de nuevo.')
       }
     }
   }
